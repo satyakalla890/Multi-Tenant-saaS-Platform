@@ -5,7 +5,7 @@ import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/protectedRoute";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
-
+import Users from "./pages/Users";
 
 function App() {
   return (
@@ -16,6 +16,7 @@ function App() {
         <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
         <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
         <Route path="/projects/:projectId" element={<ProjectDetails />} />
+        <Route path="/users" element={<Users />} />
       </Routes>
     </BrowserRouter>
   );

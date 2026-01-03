@@ -1,0 +1,16 @@
+{
+  "testCredentials": {
+    "superAdmin": {
+      "email": "superadmin@system.com",
+      "password": "Admin@123"
+    },
+    "tenantAdmin": {
+      "email": "admin@tenant1.com",
+      "password": "Admin@123"
+    },
+    "regularUser": {
+      "email": "user@tenant1.com",
+      "password": "User@123"
+    }
+  }
+}

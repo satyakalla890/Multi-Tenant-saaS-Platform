@@ -1,104 +1,107 @@
-const pool = require("../config/db");
-const { comparePassword } = require("../utils/password.util");
-const { generateToken } = require("../utils/jwt.util");
+const db = require("../../database");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-/* ================= LOGIN ================= */
-exports.login = async ({ email, password, subdomain }) => {
-  const tenantResult = await pool.query(
-    "SELECT * FROM tenants WHERE subdomain = $1",
+// ===============================
+// REGISTER TENANT
+// ===============================
+const registerTenant = async ({
+  tenantName,
+  subdomain,
+  adminEmail,
+  adminPassword,
+  adminFullName,
+}) => {
+  // Check if subdomain exists
+  const tenantCheck = await db.query(
+    "SELECT id FROM tenants WHERE subdomain = $1",
     [subdomain]
   );
-
-  if (tenantResult.rows.length === 0) {
-    throw { status: 404, message: "Tenant not found" };
+  if (tenantCheck.rows.length > 0) {
+    throw new Error("Subdomain already exists");
   }
 
-  const tenant = tenantResult.rows[0];
-
-  if (tenant.status !== "active") {
-    throw { status: 403, message: "Tenant is suspended or inactive" };
-  }
-
-  const userResult = await pool.query(
-    `SELECT * FROM users WHERE email = $1 AND tenant_id = $2`,
-    [email, tenant.id]
+  // Create tenant with default values for NOT NULL columns
+  const tenantRes = await db.query(
+    `INSERT INTO tenants (name, subdomain, status, subscription_plan, max_users, max_projects)
+     VALUES ($1, $2, 'active', 'free', 5, 3)
+     RETURNING id`,
+    [tenantName, subdomain]
   );
 
-  if (userResult.rows.length === 0) {
-    throw { status: 401, message: "Invalid credentials" };
-  }
+  const tenantId = tenantRes.rows[0].id;
 
-  const user = userResult.rows[0];
+  // Hash password
+  const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-  if (!user.is_active) {
-    throw { status: 403, message: "Account is inactive" };
-  }
+  // Create admin user (ensure column is password_hash)
+  await db.query(
+    `INSERT INTO users
+     (tenant_id, email, password_hash, full_name, role)
+     VALUES ($1, $2, $3, $4, 'tenant_admin')`,
+    [tenantId, adminEmail, hashedPassword, adminFullName]
+  );
 
-  const passwordMatch = await comparePassword(password, user.password_hash);
-
-  if (!passwordMatch) {
-    throw { status: 401, message: "Invalid credentials" };
-  }
-
-  const token = generateToken({
-    userId: user.id,
-    tenantId: user.tenant_id,
-    role: user.role,
-  });
-
-  return {
-    user: {
-      id: user.id,
-      email: user.email,
-      fullName: user.full_name,
-      role: user.role,
-      tenantId: user.tenant_id,
-    },
-    token,
-    expiresIn: 86400,
-  };
+  return { tenantId };
 };
 
-/* ================= GET CURRENT USER ================= */
-exports.getCurrentUser = async (userId) => {
-  const result = await pool.query(
-    `
-    SELECT 
-      u.id, u.email, u.full_name, u.role, u.is_active,
-      t.id AS tenant_id, t.name, t.subdomain, 
-      t.subscription_plan, t.max_users, t.max_projects
-    FROM users u
-    JOIN tenants t ON u.tenant_id = t.id
-    WHERE u.id = $1
-    `,
+// ===============================
+// LOGIN
+// ===============================
+const login = async ({ email, password, subdomain }) => {
+  const result = await db.query(
+    `SELECT u.*, t.subdomain
+     FROM users u
+     JOIN tenants t ON t.id = u.tenant_id
+     WHERE u.email = $1 AND t.subdomain = $2`,
+    [email, subdomain]
+  );
+
+  if (result.rows.length === 0) {
+    throw new Error("Invalid credentials");
+  }
+
+  const user = result.rows[0];
+  const isMatch = await bcrypt.compare(password, user.password_hash);
+
+  if (!isMatch) {
+    throw new Error("Invalid credentials");
+  }
+
+  const token = jwt.sign(
+    {
+      userId: user.id,
+      tenantId: user.tenant_id,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  return { token };
+};
+
+// ===============================
+// GET CURRENT USER
+// ===============================
+const getCurrentUser = async (userId) => {
+  const result = await db.query(
+    `SELECT id, email, full_name, role, tenant_id
+     FROM users
+     WHERE id = $1`,
     [userId]
   );
 
   if (result.rows.length === 0) {
-    throw { status: 404, message: "User not found" };
+    throw new Error("User not found");
   }
 
-  const row = result.rows[0];
-
-  return {
-    id: row.id,
-    email: row.email,
-    fullName: row.full_name,
-    role: row.role,
-    isActive: row.is_active,
-    tenant: {
-      id: row.tenant_id,
-      name: row.name,
-      subdomain: row.subdomain,
-      subscriptionPlan: row.subscription_plan,
-      maxUsers: row.max_users,
-      maxProjects: row.max_projects,
-    },
-  };
+  return result.rows[0];
 };
 
-/* ================= LOGOUT ================= */
-exports.logout = async () => {
-  // JWT-only auth → client deletes token
-  return true;
+// ✅ EXPORT ALL FUNCTIONS
+module.exports = {
+  registerTenant,
+  login,
+  getCurrentUser,
 };

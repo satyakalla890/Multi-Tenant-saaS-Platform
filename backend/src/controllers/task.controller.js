@@ -2,14 +2,22 @@ const taskService = require("../services/task.service");
 
 exports.createTask = async (req, res, next) => {
   try {
+    if (!req.params.projectId) {
+      return res.status(400).json({ message: "Project ID missing" });
+    }
+
     const data = await taskService.createTask(
       req.params.projectId,
       req.body,
       req.user
     );
+
     res.status(201).json({ success: true, data });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 };
+
 
 exports.listTasks = async (req, res, next) => {
   try {
@@ -32,3 +40,26 @@ exports.updateTaskStatus = async (req, res, next) => {
     res.json({ success: true, data });
   } catch (err) { next(err); }
 };
+
+exports.deleteTask = async (req, res, next) => {
+  try {
+    await taskService.deleteTask(req.params.taskId, req.user);
+    res.json({ success: true, message: "Task deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateTask = async (req, res, next) => {
+  try {
+    const data = await taskService.updateTask(
+      req.params.taskId,
+      req.body,
+      req.user
+    );
+    res.json({ success: true, data });
+  } catch (err) {
+    next(err);
+  }
+};
+

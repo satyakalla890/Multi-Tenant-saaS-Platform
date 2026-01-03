@@ -1,39 +1,66 @@
 const pool = require("../config/db");
 
 exports.createTask = async (projectId, payload, user) => {
-  const { title, description, assignedTo, priority = "medium", dueDate } = payload;
+  const {
+    title,
+    description,
+    assignedTo = null,
+    priority = "medium",
+    dueDate = null,
+  } = payload;
 
-  // 1️⃣ Verify project belongs to tenant
-  const projectRes = await pool.query(
-    "SELECT id, tenant_id FROM projects WHERE id=$1",
-    [projectId]
-  );
-  if (!projectRes.rows.length || projectRes.rows[0].tenant_id !== user.tenantId) {
-    throw { status: 403, message: "Project access denied" };
+  if (!title) {
+    throw { status: 400, message: "Task title required" };
   }
 
-  // 2️⃣ Verify assigned user belongs to same tenant
+  // ✅ Verify project belongs to tenant
+  const projectRes = await pool.query(
+    "SELECT tenant_id FROM projects WHERE id=$1",
+    [projectId]
+  );
+
+  if (!projectRes.rows.length) {
+    throw { status: 404, message: "Project not found" };
+  }
+
+  if (projectRes.rows[0].tenant_id !== user.tenantId) {
+    throw { status: 403, message: "Access denied" };
+  }
+
+  // ✅ Validate assigned user
+  let assignedUserId = null;
   if (assignedTo) {
     const userCheck = await pool.query(
       "SELECT id FROM users WHERE id=$1 AND tenant_id=$2",
       [assignedTo, user.tenantId]
     );
+
     if (!userCheck.rows.length) {
-      throw { status: 400, message: "Assigned user not in tenant" };
+      throw { status: 400, message: "Invalid assigned user" };
     }
+
+    assignedUserId = assignedTo;
   }
 
-  // 3️⃣ Insert task
   const result = await pool.query(
     `INSERT INTO tasks
      (project_id, tenant_id, title, description, status, priority, assigned_to, due_date)
      VALUES ($1,$2,$3,$4,'todo',$5,$6,$7)
      RETURNING *`,
-    [projectId, user.tenantId, title, description, priority, assignedTo, dueDate]
+    [
+      projectId,
+      user.tenantId,
+      title,
+      description || null,
+      priority,
+      assignedUserId,
+      dueDate,
+    ]
   );
 
   return result.rows[0];
 };
+
 
 exports.listTasks = async (projectId, user, query) => {
   const { status, assignedTo, priority, search, page = 1, limit = 50 } = query;
@@ -71,4 +98,53 @@ exports.updateTaskStatus = async (taskId, status, user) => {
   );
   if (!res.rows.length) throw { status: 403, message: "Task access denied" };
   return res.rows[0];
+};
+
+exports.deleteTask = async (taskId, user) => {
+  const result = await pool.query(
+    `DELETE FROM tasks
+     WHERE id=$1 AND tenant_id=$2`,
+    [taskId, user.tenantId]
+  );
+
+  if (!result.rowCount) {
+    throw { status: 403, message: "Task not found or access denied" };
+  }
+};
+
+exports.updateTask = async (taskId, payload, user) => {
+  const {
+    title,
+    description,
+    priority,
+    status,
+    assignedTo
+  } = payload;
+
+  const result = await pool.query(
+    `UPDATE tasks
+     SET title=$1,
+         description=$2,
+         priority=$3,
+         status=$4,
+         assigned_to=$5,
+         updated_at=NOW()
+     WHERE id=$6 AND tenant_id=$7
+     RETURNING *`,
+    [
+      title,
+      description,
+      priority,
+      status,
+      assignedTo,
+      taskId,
+      user.tenantId
+    ]
+  );
+
+  if (!result.rows.length) {
+    throw { status: 403, message: "Task update not allowed" };
+  }
+
+  return result.rows[0];
 };

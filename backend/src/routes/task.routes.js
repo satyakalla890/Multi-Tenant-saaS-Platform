@@ -6,6 +6,9 @@ const { createTaskValidator, updateTaskStatusValidator } = require("../validator
 
 router.post("/projects/:projectId/tasks", auth, createTaskValidator, controller.createTask);
 router.get("/projects/:projectId/tasks", auth, controller.listTasks);
+router.put("/tasks/:taskId", auth, controller.updateTask);
 router.patch("/tasks/:taskId/status", auth, updateTaskStatusValidator, controller.updateTaskStatus);
+router.delete("/tasks/:taskId", auth, controller.deleteTask);
+
 
 module.exports = router;

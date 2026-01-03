@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registerTenant } from "../services/authService";
 import { useNavigate } from "react-router-dom";
+import "./project.css";
 
 export default function Register() {
   const navigate = useNavigate();

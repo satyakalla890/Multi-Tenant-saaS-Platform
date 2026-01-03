@@ -8,7 +8,6 @@ import ProjectDetails from "./pages/ProjectDetails";
 import Users from "./pages/Users";
 import Tasks from "./pages/Tasks";
 
-
 function App() {
   return (
     <BrowserRouter>

@@ -7,6 +7,11 @@ RUN npm install
 
 COPY . .
 
+# Install postgres client for pg_isready
+RUN apt-get update && apt-get install -y postgresql-client
+
+RUN chmod +x scripts/start.sh
+
 EXPOSE 5000
 
-CMD ["node", "src/server.js"]
+CMD ["sh", "scripts/start.sh"]

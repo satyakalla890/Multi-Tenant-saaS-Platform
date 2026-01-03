@@ -1,7 +1,7 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-
+const db = require("../database");
 // Load environment variables
 dotenv.config();
 
@@ -34,7 +34,6 @@ app.use("/api", userRoutes);
 app.use("/api", taskRoutes);
 app.use("/api", healthRoutes);
 
-
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err);
@@ -42,6 +41,10 @@ app.use((err, req, res, next) => {
     success: false,
     message: err.message || "Internal Server Error",
   });
+});
+
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
 
 module.exports = app;

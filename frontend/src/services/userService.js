@@ -1,14 +1,6 @@
-import axios from "axios";
+import API from "./api";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000/api",
-});
-
-API.interceptors.request.use((req) => {
-  const token = localStorage.getItem("token");
-  if (token) req.headers.Authorization = `Bearer ${token}`;
-  return req;
-});
+// ✅ USE THE SAME AXIOS INSTANCE WITH TOKEN
 
 export const getTenantUsers = (tenantId, params = {}) =>
   API.get(`/tenants/${tenantId}/users`, { params });

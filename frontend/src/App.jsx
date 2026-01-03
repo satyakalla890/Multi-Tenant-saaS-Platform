@@ -6,6 +6,8 @@ import ProtectedRoute from "./components/protectedRoute";
 import Projects from "./pages/Projects";
 import ProjectDetails from "./pages/ProjectDetails";
 import Users from "./pages/Users";
+import Tasks from "./pages/Tasks";
+
 
 function App() {
   return (
@@ -15,8 +17,10 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/dashboard" element={<ProtectedRoute> <Dashboard /> </ProtectedRoute>} />
         <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
-        <Route path="/projects/:projectId" element={<ProjectDetails />} />
+        <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetails /></ProtectedRoute>} />
         <Route path="/users" element={<Users />} />
+        <Route path="/tasks" element={<Tasks />} />
+        <Route path="/projects/:projectId/tasks" element={<Tasks />} />
       </Routes>
     </BrowserRouter>
   );

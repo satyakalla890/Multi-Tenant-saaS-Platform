@@ -5,6 +5,7 @@ import UserModal from "../components/UserModal";
 export default function Users() {
   const tenantId = localStorage.getItem("tenantId");
 
+
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
@@ -15,8 +16,13 @@ export default function Users() {
   };
 
   useEffect(() => {
+    if (!tenantId) {
+      console.error("❌ tenantId missing");
+      return;
+    }
     fetchUsers();
-  }, []);
+  }, [tenantId]);
+
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this user?")) return;
@@ -43,11 +49,11 @@ export default function Users() {
         <tbody>
           {users.map((u) => (
             <tr key={u.id}>
-              <td>{u.fullName}</td>
+              <td>{u.full_name}</td>
               <td>{u.email}</td>
               <td>{u.role}</td>
-              <td>{u.isActive ? "Active" : "Inactive"}</td>
-              <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+              <td>{u.is_active ? "Active" : "Inactive"}</td>
+              <td>{new Date(u.created_at).toLocaleDateString()}</td>
               <td>
                 <button onClick={() => { setEditUser(u); setShowModal(true); }}>
                   Edit

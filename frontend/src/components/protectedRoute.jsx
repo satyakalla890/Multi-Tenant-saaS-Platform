@@ -3,5 +3,10 @@ import { getToken } from "../utils/auth";
 
 export default function ProtectedRoute({ children }) {
   const token = getToken();
-  return token ? children : <Navigate to="/login" replace />;
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 }

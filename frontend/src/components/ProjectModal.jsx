@@ -8,8 +8,21 @@ export default function ProjectModal({ show, onClose, onSave, project }) {
   });
 
   useEffect(() => {
-    if (project) setForm({ ...project });
+    if (project) {
+      setForm({
+        name: project.name || "",
+        description: project.description || "",
+        status: project.status || "active",
+      });
+    } else {
+      setForm({
+        name: "",
+        description: "",
+        status: "active",
+      });
+    }
   }, [project]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,9 +30,20 @@ export default function ProjectModal({ show, onClose, onSave, project }) {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(form);
+  e.preventDefault();
+
+  console.log("MODAL SUBMIT CLICKED");
+
+  const payload = {
+    name: form.name,
+    description: form.description,
+    status: form.status,
   };
+
+  console.log("MODAL PAYLOAD:", payload);
+
+  onSave(payload);
+};
 
   if (!show) return null;
 
@@ -29,6 +53,7 @@ export default function ProjectModal({ show, onClose, onSave, project }) {
         <h2>{project ? "Edit Project" : "Create Project"}</h2>
         <form onSubmit={handleSubmit}>
           <input
+            id="project-name"
             name="name"
             placeholder="Project Name"
             value={form.name}
@@ -36,6 +61,7 @@ export default function ProjectModal({ show, onClose, onSave, project }) {
             required
           />
           <textarea
+            id="project-description"
             name="description"
             placeholder="Description"
             value={form.description}

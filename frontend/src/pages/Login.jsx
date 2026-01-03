@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { login } from "../services/authService";
 import { useNavigate, Link } from "react-router-dom";
+import { saveToken } from "../utils/auth";
+import { jwtDecode } from "jwt-decode";
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -23,21 +26,34 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
     try {
-      setLoading(true);
       const res = await login({
         email: form.email,
         password: form.password,
         subdomain: form.subdomain,
       });
 
-      const storage = form.remember ? localStorage : sessionStorage;
-      storage.setItem("token", res.data.token);
+      const token = res.data.data.token;
+
+      // ✅ Save token
+      saveToken(res.data.data.token, form.remember);
+
+      // ✅ Decode JWT (CRITICAL FIX)
+      const decoded = jwtDecode(token);
+
+      console.log("DECODED TOKEN:", decoded);
+
+      // ✅ Persist required values
+      localStorage.setItem("tenantId", decoded.tenantId);
+      localStorage.setItem("userId", decoded.userId);
+      localStorage.setItem("role", decoded.role);
 
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      console.error("LOGIN ERROR:", err);
+      setError("Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -54,6 +70,7 @@ export default function Login() {
           type="email"
           name="email"
           placeholder="Email"
+          value={form.email}
           onChange={handleChange}
           required
         />
@@ -62,6 +79,7 @@ export default function Login() {
           type="password"
           name="password"
           placeholder="Password"
+          value={form.password}
           onChange={handleChange}
           required
         />
@@ -69,6 +87,7 @@ export default function Login() {
         <input
           name="subdomain"
           placeholder="Tenant Subdomain"
+          value={form.subdomain}
           onChange={handleChange}
           required
         />
@@ -77,12 +96,13 @@ export default function Login() {
           <input
             type="checkbox"
             name="remember"
+            checked={form.remember}
             onChange={handleChange}
           />
           Remember me
         </label>
 
-        <button disabled={loading}>
+        <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>

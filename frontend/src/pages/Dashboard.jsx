@@ -7,45 +7,55 @@ import ProjectCard from "../components/ProjectCard";
 export default function Dashboard() {
   const [currentUser, setCurrentUser] = useState({});
   const [projects, setProjects] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [stats, setStats] = useState({ totalTasks: 0, completedTasks: 0 });
+  const [stats, setStats] = useState({
+    totalTasks: 0,
+    completedTasks: 0,
+  });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitialData = async () => {
       try {
+        // ✅ 1. Get current user
         const userRes = await API.get("/auth/me");
         setCurrentUser(userRes.data.data);
 
+        // ✅ 2. Get all projects
         const projectsRes = await API.get("/projects");
-        setProjects(projectsRes.data.data.projects);
+        const projectsList = projectsRes.data.data.projects || [];
 
-        // Assuming backend returns tasks for current user
-        const tasksRes = await API.get(
-          `/projects/${projectsRes.data.data.projects[0]?.id}/tasks`
+        setProjects(projectsList);
+
+        // ✅ 3. Calculate dashboard stats from projects
+        const totalTasks = projectsList.reduce(
+          (sum, p) => sum + Number(p.task_count || 0),
+          0
         );
-        setTasks(tasksRes.data.data.tasks || []);
 
-        const completed = tasksRes.data.data.tasks.filter(
-          (t) => t.status === "completed"
-        ).length;
+        const completedTasks = projectsList.reduce(
+          (sum, p) => sum + Number(p.completed_task_count || 0),
+          0
+        );
 
         setStats({
-          totalTasks: tasksRes.data.data.total || 0,
-          completedTasks: completed,
+          totalTasks,
+          completedTasks,
         });
       } catch (err) {
-        console.error(err);
+        console.error("Dashboard init error:", err);
       }
     };
 
-    fetchData();
+    fetchInitialData();
   }, []);
 
   return (
     <>
       <Navbar currentUser={currentUser} />
+
       <div className="dashboard-container">
         <h2>Dashboard</h2>
+
+        {/* 📊 Stats */}
         <div className="stats-section">
           <StatsCard title="Total Projects" value={projects.length} />
           <StatsCard title="Total Tasks" value={stats.totalTasks} />
@@ -56,21 +66,13 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* 📁 Recent Projects */}
         <h3>Recent Projects</h3>
         <div className="projects-section">
           {projects.slice(0, 5).map((p) => (
-            <ProjectCard key={p.id} project={p} onClick={() => {}} />
+            <ProjectCard key={p.id} project={p} />
           ))}
         </div>
-
-        <h3>My Tasks</h3>
-        <ul className="tasks-section">
-          {tasks.map((t) => (
-            <li key={t.id}>
-              {t.title} | Priority: {t.priority} | Status: {t.status}
-            </li>
-          ))}
-        </ul>
       </div>
     </>
   );

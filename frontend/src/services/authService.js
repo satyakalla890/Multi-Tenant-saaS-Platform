@@ -4,9 +4,21 @@ const API = axios.create({
   baseURL: "http://localhost:5000/api",
 });
 
-// Export functions
-export const registerTenant = (data) =>
-  API.post("/auth/register-tenant", data);
+// REGISTER TENANT
+export const registerTenant = (data) => {
+  return API.post("/auth/register-tenant", data);
+};
 
-export const login = (data) =>
-  API.post("/auth/login", data); // <-- this must be named "login"
+// LOGIN
+export const login = (data) => {
+  return API.post("/auth/login", data);
+};
+
+// GET CURRENT USER
+export const getMe = () => {
+  return API.get("/auth/me", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  });
+};

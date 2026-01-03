@@ -21,6 +21,8 @@ export default function Projects() {
   useEffect(() => { fetchProjects(); }, [filterStatus, search]);
 
   const handleSave = async (projectData) => {
+    console.log("UPDATE PAYLOAD:", projectData);
+
     if (editingProject) {
       await updateProject(editingProject.id, projectData);
     } else {
@@ -60,7 +62,16 @@ export default function Projects() {
             <ProjectCard
               key={p.id}
               project={p}
-              onEdit={(proj) => { setEditingProject(proj); setModalOpen(true); }}
+              onEdit={(proj) => {
+                setEditingProject({
+                  id: proj.id,
+                  name: proj.name,
+                  description: proj.description,
+                  status: proj.status,
+                });
+                setModalOpen(true);
+              }}
+
               onDelete={handleDelete}
             />
           ))

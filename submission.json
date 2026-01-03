@@ -2,15 +2,35 @@
   "testCredentials": {
     "superAdmin": {
       "email": "superadmin@system.com",
-      "password": "Admin@123"
+      "password": "Admin@123",
+      "role": "super_admin",
+      "tenantId": null
     },
-    "tenantAdmin": {
-      "email": "admin@tenant1.com",
-      "password": "Admin@123"
-    },
-    "regularUser": {
-      "email": "user@tenant1.com",
-      "password": "User@123"
-    }
+    "tenants": [
+      {
+        "name": "Demo Tenant",
+        "subdomain": "demo",
+        "status": "active",
+        "subscriptionPlan": "free",
+        "admin": {
+          "email": "admin@demo.com",
+          "password": "Admin@123",
+          "role": "tenant_admin"
+        },
+        "users": [
+          {
+            "email": "user@demo.com",
+            "password": "Admin@123",
+            "role": "user"
+          }
+        ],
+        "projects": [
+          {
+            "name": "Demo Project",
+            "description": "Initial demo project created during seed"
+          }
+        ]
+      }
+    ]
   }
 }

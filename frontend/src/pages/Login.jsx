@@ -3,7 +3,7 @@ import { login } from "../services/authService";
 import { useNavigate, Link } from "react-router-dom";
 import { saveToken } from "../utils/auth";
 import { jwtDecode } from "jwt-decode";
-
+import "./project.css";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -36,81 +36,88 @@ export default function Login() {
       });
 
       const token = res.data.data.token;
+      saveToken(token, form.remember);
 
-      // ✅ Save token
-      saveToken(res.data.data.token, form.remember);
-
-      // ✅ Decode JWT (CRITICAL FIX)
       const decoded = jwtDecode(token);
-
-      console.log("DECODED TOKEN:", decoded);
-
-      // ✅ Persist required values
       localStorage.setItem("tenantId", decoded.tenantId);
       localStorage.setItem("userId", decoded.userId);
       localStorage.setItem("role", decoded.role);
 
       navigate("/dashboard");
     } catch (err) {
-      console.error("LOGIN ERROR:", err);
-      setError("Invalid credentials");
+      setError("Invalid credentials. Please check your details.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <header className="auth-header">
+          <h2>Welcome Back</h2>
+          <p>Enter your credentials to access your dashboard</p>
+        </header>
 
-      {error && <p className="error">{error}</p>}
+        {error && <div className="msg msg-error">{error}</div>}
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Email Address</label>
+            <input
+              type="email"
+              name="email"
+              placeholder="e.g. john@example.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <input
-          name="subdomain"
-          placeholder="Tenant Subdomain"
-          value={form.subdomain}
-          onChange={handleChange}
-          required
-        />
+          <div className="form-group">
+            <label>Tenant Subdomain</label>
+            <input
+              name="subdomain"
+              placeholder="e.g. acme-corp"
+              value={form.subdomain}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <label>
-          <input
-            type="checkbox"
-            name="remember"
-            checked={form.remember}
-            onChange={handleChange}
-          />
-          Remember me
-        </label>
+          <label className="remember-me">
+            <input
+              type="checkbox"
+              name="remember"
+              checked={form.remember}
+              onChange={handleChange}
+            />
+            Remember me for 30 days
+          </label>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+          <button className="btn btn-primary" type="submit" disabled={loading} style={{ width: '100%', padding: '0.875rem' }}>
+            {loading ? "Verifying..." : "Sign In"}
+          </button>
+        </form>
 
-      <p>
-        Don’t have an account?
-        <Link to="/register"> Register</Link>
-      </p>
+        <footer className="auth-footer">
+          Don't have an account?
+          <Link to="/register">Create an account</Link>
+        </footer>
+      </div>
     </div>
   );
 }
+

@@ -1,6 +1,6 @@
 const db = require("../config/db");
 
-exports.createProject = async ({ tenantId, userId, name, description }) => {
+exports.createProject = async ({ tenantId, userId, name, description, status = 'active' }) => {
   const projectCount = await db.query(
     "SELECT COUNT(*) FROM projects WHERE tenant_id=$1",
     [tenantId]
@@ -11,14 +11,18 @@ exports.createProject = async ({ tenantId, userId, name, description }) => {
     [tenantId]
   );
 
+  if (!tenant.rows[0]) {
+    throw { status: 404, message: "Tenant not found" };
+  }
+
   if (parseInt(projectCount.rows[0].count) >= tenant.rows[0].max_projects) {
     throw { status: 403, message: "Project limit reached" };
   }
 
   const result = await db.query(
-    `INSERT INTO projects (tenant_id, name, description, created_by)
-     VALUES ($1,$2,$3,$4) RETURNING *`,
-    [tenantId, name, description || null, userId]
+    `INSERT INTO projects (tenant_id, name, description, status, created_by)
+     VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+    [tenantId, name, description || null, status, userId]
   );
 
   return result.rows[0];
@@ -45,11 +49,16 @@ exports.getProjects = async ({ tenantId, status, search, limit, offset }) => {
     query += ` AND p.name ILIKE $${values.length}`;
   }
 
-  query += " ORDER BY p.created_at DESC LIMIT $2 OFFSET $3";
+  const limitIdx = values.length + 1;
+  const offsetIdx = values.length + 2;
+  values.push(limit, offset);
 
-  const result = await db.query(query, [tenantId, limit, offset]);
+  query += ` ORDER BY p.created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`;
+
+  const result = await db.query(query, values);
   return result.rows;
 };
+
 
 exports.getProjectById = async (projectId) => {
   const result = await db.query(

@@ -2,8 +2,8 @@
 set -e
 
 echo "⏳ Waiting for database..."
-until pg_isready -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER"; do
-  sleep 2
+until pg_isready -h database -p 5432 -U postgres; do
+  sleep 1
 done
 
 echo "✅ Database is ready"

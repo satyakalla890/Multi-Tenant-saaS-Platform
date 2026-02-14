@@ -1,9 +1,11 @@
-const express = require("express");
 const dotenv = require("dotenv");
-const cors = require("cors");
-const db = require("../database");
 // Load environment variables
 dotenv.config();
+
+const express = require("express");
+const cors = require("cors");
+const db = require("../database");
+
 
 const authRoutes = require("./routes/auth.routes");
 const projectRoutes = require("./routes/project.routes");
@@ -15,12 +17,14 @@ const healthRoutes = require("./routes/health.routes");
 const app = express();
 
 // Enable CORS for frontend
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: true,
     credentials: true,
   })
 );
+
 
 // JSON parser
 app.use(express.json());

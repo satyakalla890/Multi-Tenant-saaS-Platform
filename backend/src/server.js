@@ -1,5 +1,5 @@
 const app = require("./app");
-const db = require("../database"); 
+const db = require("../database");
 
 const PORT = process.env.PORT || 5000;
 
@@ -10,10 +10,16 @@ db.connect()
     client.release();
 
     // Start server only after DB is reachable
-    app.listen(PORT, () => {
+    const server = app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
+
+    server.on('error', (err) => {
+      console.error("❌ Server start error:", err);
+      process.exit(1);
+    });
   })
+
   .catch(err => {
     console.error("❌ PostgreSQL connection failed:", err.stack);
   });

@@ -27,54 +27,78 @@ export default function UserModal({ tenantId, user, onClose }) {
   };
 
   return (
-    <div className="modal">
-      <h3>{user ? "Edit User" : "Add User"}</h3>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
+    <div className="modal-overlay">
+      <div className="modal">
+        <h2>{user ? "Edit Member" : "Add New Member"}</h2>
 
-        <input
-          name="fullName"
-          placeholder="Full Name"
-          value={form.fullName}
-          onChange={handleChange}
-          required
-        />
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-light)' }}>Email Address</label>
+            <input
+              name="email"
+              type="email"
+              placeholder="e.g. john@example.com"
+              value={form.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        {!user && (
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            onChange={handleChange}
-            required
-          />
-        )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-light)' }}>Full Name</label>
+            <input
+              name="fullName"
+              placeholder="e.g. John Doe"
+              value={form.fullName}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <select name="role" value={form.role} onChange={handleChange}>
-          <option value="user">User</option>
-          <option value="tenant_admin">Tenant Admin</option>
-        </select>
+          {!user && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-light)' }}>Password</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Set a secure password"
+                onChange={handleChange}
+                required
+              />
+            </div>
+          )}
 
-        <label>
-          <input
-            type="checkbox"
-            name="isActive"
-            checked={form.isActive}
-            onChange={handleChange}
-          />
-          Active
-        </label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-light)' }}>Role</label>
+              <select name="role" value={form.role} onChange={handleChange}>
+                <option value="user">Standard User</option>
+                <option value="tenant_admin">Tenant Administrator</option>
+              </select>
+            </div>
 
-        <button type="submit">Save</button>
-        <button type="button" onClick={onClose}>Cancel</button>
-      </form>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1.25rem' }}>
+              <input
+                type="checkbox"
+                name="isActive"
+                style={{ width: 'auto', margin: 0 }}
+                checked={form.isActive}
+                onChange={handleChange}
+              />
+              <label style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--text-dark)', cursor: 'pointer' }}>Active Member</label>
+            </div>
+          </div>
+
+          <div className="modal-actions" style={{ marginTop: '1rem' }}>
+            <button className="btn btn-outline" type="button" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" type="submit">
+              {user ? "Update Member" : "Add Member"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
+

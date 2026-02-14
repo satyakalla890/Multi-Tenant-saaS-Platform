@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { logout } from "../utils/auth";
 
 export default function Navbar({ currentUser }) {
@@ -11,7 +11,9 @@ export default function Navbar({ currentUser }) {
 
   return (
     <nav className="navbar">
-      <div className="logo">My SaaS App</div>
+      <div className="logo">Dashboard</div>
+
+
       <ul className="menu">
         <li onClick={() => navigate("/dashboard")}>Dashboard</li>
         <li onClick={() => navigate("/projects")}>Projects</li>
@@ -25,10 +27,17 @@ export default function Navbar({ currentUser }) {
           <li onClick={() => navigate("/tenants")}>Tenants</li>
         )}
       </ul>
+
       <div className="user-dropdown">
-        {currentUser.fullName} ({currentUser.role})
-        <button onClick={handleLogout}>Logout</button>
+        <span style={{ fontSize: '0.875rem', fontWeight: 600 }}>
+          {currentUser.fullName}
+          <span style={{ color: 'var(--text-light)', fontWeight: 400, marginLeft: '0.5rem' }}>
+            ({currentUser.role?.replace('_', ' ')})
+          </span>
+        </span>
+        <button className="btn-logout" onClick={handleLogout}>Logout</button>
       </div>
     </nav>
   );
 }
+

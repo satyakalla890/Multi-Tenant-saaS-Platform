@@ -30,20 +30,20 @@ export default function ProjectModal({ show, onClose, onSave, project }) {
   };
 
   const handleSubmit = (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  console.log("MODAL SUBMIT CLICKED");
+    console.log("MODAL SUBMIT CLICKED");
 
-  const payload = {
-    name: form.name,
-    description: form.description,
-    status: form.status,
+    const payload = {
+      name: form.name,
+      description: form.description,
+      status: form.status,
+    };
+
+    console.log("MODAL PAYLOAD:", payload);
+
+    onSave(payload);
   };
-
-  console.log("MODAL PAYLOAD:", payload);
-
-  onSave(payload);
-};
 
   if (!show) return null;
 
@@ -73,9 +73,10 @@ export default function ProjectModal({ show, onClose, onSave, project }) {
             <option value="completed">Completed</option>
           </select>
           <div className="modal-actions">
-            <button type="button" onClick={onClose}>Cancel</button>
-            <button type="submit">Save</button>
+            <button className="btn btn-outline" type="button" onClick={onClose}>Cancel</button>
+            <button className="btn btn-primary" type="submit">Save Project</button>
           </div>
+
         </form>
       </div>
     </div>

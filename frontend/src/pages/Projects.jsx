@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getProjects, createProject, updateProject, deleteProject } from "../services/api";
 import ProjectCard from "../components/ProjectCard";
 import ProjectModal from "../components/ProjectModal";
-
+import "./project.css";
 export default function Projects() {
   const [projects, setProjects] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -42,12 +42,21 @@ export default function Projects() {
 
   return (
     <div className="projects-page">
-      <h2>Projects</h2>
+      <div className="section-header">
+        <h2>Projects</h2>
+        <button className="btn btn-primary" onClick={() => setModalOpen(true)}>
+          Create New Project
+        </button>
+      </div>
+
       <div className="controls">
-        <button onClick={() => setModalOpen(true)}>Create New Project</button>
-        <input placeholder="Search by name" value={search} onChange={(e)=>setSearch(e.target.value)} />
-        <select value={filterStatus} onChange={(e)=>setFilterStatus(e.target.value)}>
-          <option value="">All Status</option>
+        <input
+          placeholder="Search projects..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
+          <option value="">All Statuses</option>
           <option value="active">Active</option>
           <option value="archived">Archived</option>
           <option value="completed">Completed</option>
@@ -56,8 +65,11 @@ export default function Projects() {
 
       <div className="projects-list">
         {projects.length === 0 ? (
-          <p>No projects found.</p>
+          <div className="glass" style={{ padding: '4rem', textAlign: 'center', gridColumn: '1 / -1', borderRadius: '16px' }}>
+            <p style={{ color: 'var(--text-light)', fontStyle: 'normal' }}>No projects matched your filters.</p>
+          </div>
         ) : (
+
           projects.map((p) => (
             <ProjectCard
               key={p.id}

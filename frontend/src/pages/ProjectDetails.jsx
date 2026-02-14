@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProjectById, updateProject, deleteProject } from "../services/projectService";
 import { getProjectTasks, createTask, updateTaskStatus, deleteTask } from "../services/taskService";
-
+import "./project.css";
 export default function ProjectDetails() {
   const { projectId } = useParams();
   const navigate = useNavigate();
